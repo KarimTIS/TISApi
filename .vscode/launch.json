@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
-      "cwd": "d:/TIS/dev/TISControlProtocol",
-      "program": "d:/TIS/dev/TISControlProtocol/build/Debug/outDebug",
+      "cwd": "d:/TIS/dev/TISApi",
+      "program": "d:/TIS/dev/TISApi/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [

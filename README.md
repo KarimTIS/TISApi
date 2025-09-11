@@ -1,4 +1,4 @@
-# TISControlProtocol
+# TISApi
 
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
 ![Version 0.5.14](https://img.shields.io/badge/version-0.5.14-blue)
@@ -6,7 +6,7 @@
 ![Python](https://img.shields.io/badge/python-3.11+-orange)
 ![signed](https://img.shields.io/badge/signed-yes-green)
 
-TISControlProtocol is a powerful Python package for controlling TIS devices. It provides a simple and intuitive API for interacting with TIS devices, making it easy to integrate TIS devices into your Python applications.
+TISApi is a powerful Python package for controlling TIS devices. It provides a simple and intuitive API for interacting with TIS devices, making it easy to integrate TIS devices into your Python applications.
 
 ## Features
 
@@ -19,10 +19,10 @@ TISControlProtocol is a powerful Python package for controlling TIS devices. It 
 
 ## Installation
 
-You can install TISControlProtocol by adding it to your Manifest file or by using pip. Here's how you can install it using pip:
+You can install TISApi by adding it to your Manifest file or by using pip. Here's how you can install it using pip:
 
 ```bash
-pip install TISControlProtocol
+pip install TISApi
 ```
 
 ## Verifying Package Signatures
@@ -36,8 +36,8 @@ This package is signed with GPG to ensure authenticity. Follow these steps to ve
 3. **Download Files**: Get the `.tar.gz`, `.whl`, and `.asc` files from PyPI or GitHub Releases.
 4. **Verify**:
    ```bash
-   gpg --verify tiscontrolprotocol-0.5.14.tar.gz.asc tiscontrolprotocol-0.5.14.tar.gz
-   gpg --verify tiscontrolprotocol-0.5.14-py3-none-any.whl.asc tiscontrolprotocol-0.5.14-py3-none-any.whl
+   gpg --verify TISApi-0.5.14.tar.gz.asc TISApi-0.5.14.tar.gz
+   gpg --verify TISApi-0.5.14-py3-none-any.whl.asc TISApi-0.5.14-py3-none-any.whl
 ## License
 
-TISControlProtocol is licensed under the MIT license. See the [LICENSE](https://your-license-link) file for details.
+TISApi is licensed under the MIT license. See the [LICENSE](https://your-license-link) file for details.
