@@ -1,8 +1,8 @@
-from TISControlProtocol.BytesHelper import *
-from TISControlProtocol.Protocols.udp.PacketSender import PacketSender
-from TISControlProtocol.Protocols.udp.PacketReceiver import PacketReceiver
-from TISControlProtocol.Protocols.udp.AckCoordinator import AckCoordinator
-from TISControlProtocol.shared import ack_events
+from TISApi.BytesHelper import *
+from TISApi.Protocols.udp.PacketSender import PacketSender
+from TISApi.Protocols.udp.PacketReceiver import PacketReceiver
+from TISApi.Protocols.udp.AckCoordinator import AckCoordinator
+from TISApi.shared import ack_events
 
 from .PacketHandlers.ControlResponseHandler import handle_control_response
 from .PacketHandlers.DiscoveryFeedbackHandler import handle_discovery_feedback

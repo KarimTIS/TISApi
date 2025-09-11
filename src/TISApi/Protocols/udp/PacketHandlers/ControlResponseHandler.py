@@ -2,7 +2,7 @@ from homeassistant.core import HomeAssistant
 
 import logging
 import asyncio
-from TISControlProtocol.shared import ack_events
+from TISApi.shared import ack_events
 
 
 async def handle_control_response(hass: HomeAssistant, info: dict):

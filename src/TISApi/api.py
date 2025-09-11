@@ -3,8 +3,8 @@ import logging
 import socket
 
 from homeassistant.core import HomeAssistant
-from TISControlProtocol.Protocols import setup_udp_protocol
-from TISControlProtocol.Protocols.udp.ProtocolHandler import (
+from TISApi.Protocols import setup_udp_protocol
+from TISApi.Protocols.udp.ProtocolHandler import (
     TISPacket,
     TISProtocolHandler,
 )

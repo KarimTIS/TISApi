@@ -1,7 +1,7 @@
-from TISControlProtocol.BytesHelper import *
+from TISApi.BytesHelper import *
 from socket import socket
-from TISControlProtocol.Protocols.udp.PacketExtractor import PacketExtractor
-from TISControlProtocol.Protocols.udp.PacketDispatcher import PacketDispatcher
+from TISApi.Protocols.udp.PacketExtractor import PacketExtractor
+from TISApi.Protocols.udp.PacketDispatcher import PacketDispatcher
 import logging
 from homeassistant.core import HomeAssistant
 

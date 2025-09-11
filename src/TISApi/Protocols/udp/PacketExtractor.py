@@ -1,4 +1,4 @@
-from TISControlProtocol.BytesHelper import checkCRC
+from TISApi.BytesHelper import checkCRC
 import logging
 
 

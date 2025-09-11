@@ -1,6 +1,6 @@
 import logging
 import asyncio
-from TISControlProtocol.shared import ack_events
+from TISApi.shared import ack_events
 from typing import Union
 
 

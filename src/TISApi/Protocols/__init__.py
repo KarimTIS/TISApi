@@ -1,6 +1,6 @@
 from asyncio import get_event_loop, AbstractEventLoop
 import socket
-from TISControlProtocol.Protocols.udp.PacketProtocol import PacketProtocol
+from TISApi.Protocols.udp.PacketProtocol import PacketProtocol
 from homeassistant.core import HomeAssistant
 
 loop = get_event_loop()
