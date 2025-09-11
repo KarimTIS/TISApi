@@ -2,3 +2,4 @@
 dist
 mykey.pub
 mykey.asc
+*.pyc
