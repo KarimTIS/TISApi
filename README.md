@@ -25,19 +25,6 @@ You can install TISApi by adding it to your Manifest file or by using pip. Here'
 pip install TISApi
 ```
 
-## Verifying Package Signatures
-
-This package is signed with GPG to ensure authenticity. Follow these steps to verify:
-
-1. **Install GPG**: Ensure you have GPG installed (`gpg --version`).
-2. **Get My Public Key**:
-   - Import from a keyserver: `gpg --keyserver hkp://keyserver.ubuntu.com --recv-keys 97DADF7C6008FBCEB93506624A93BA55D2B45649`
-   - Import it: `gpg --import mykey.pub`
-3. **Download Files**: Get the `.tar.gz`, `.whl`, and `.asc` files from PyPI or GitHub Releases.
-4. **Verify**:
-   ```bash
-   gpg --verify TISApi-0.5.14.tar.gz.asc TISApi-0.5.14.tar.gz
-   gpg --verify TISApi-0.5.14-py3-none-any.whl.asc TISApi-0.5.14-py3-none-any.whl
 ## License
 
-TISApi is licensed under the MIT license. See the [LICENSE](https://your-license-link) file for details.
+TISApi is licensed under the MIT license. See the [LICENSE](https://github.com/IbrahimMohamed2001/TISApi/blob/main/LICENSE) file for details.
