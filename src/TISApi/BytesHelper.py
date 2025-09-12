@@ -23,8 +23,6 @@ def bytes2hex(data, rtype=[]):
 def build_packet(
     operation_code: list,
     ip_address: str,
-    destination_mac: str = "AA:AA:AA:AA:AA:AA:AA:AA",
-    source_mac: str = "CB:CB:CB:CB:CB:CB:CB:CB",
     device_id: list = [],
     source_device_id: list = [0x01, 0xFE],
     additional_bytes: list = [],
@@ -34,8 +32,6 @@ def build_packet(
     # test if all params are loaded
     ip_bytes = [int(part) for part in ip_address.split(".")]
     header_bytes = [ord(char) for char in header]
-    source_mac = [int(part, 16) for part in source_mac.split(":")]
-    destination_mac = [int(part, 16) for part in destination_mac.split(":")]
 
     length = 11 + len(additional_bytes)
     packet = (
