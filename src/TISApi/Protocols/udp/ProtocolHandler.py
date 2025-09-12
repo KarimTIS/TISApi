@@ -34,7 +34,7 @@ class TISPacket:
             ip_address=self.source_ip,
             device_id=self.device_id,
             operation_code=self.operation_code,
-            additional_packets=self.additional_bytes,
+            additional_bytes=self.additional_bytes,
         )
 
     def __str__(self) -> str:
@@ -52,11 +52,8 @@ class TISProtocolHandler:
     OPERATION_DISCOVERY = [0x00, 0x0E]
     OPERATION_CONTROL_UPDATE = [0x00, 0x33]
 
-    def __init__(self) -> None:
-        """Initialize a ProtocolHandler instance."""
-        pass
-
-    def generate_control_on_packet(self, entity) -> TISPacket:
+    @staticmethod
+    def generate_control_on_packet(entity) -> TISPacket:
         """
         Generate a packet to switch on the device.
 
@@ -71,7 +68,8 @@ class TISProtocolHandler:
             additional_bytes=[entity.channel_number, 0x64, 0x00, 0x00],
         )
 
-    def generate_control_off_packet(self, entity) -> TISPacket:
+    @staticmethod
+    def generate_control_off_packet(entity) -> TISPacket:
         """
         Generate a packet to switch off the device.
 
@@ -86,7 +84,8 @@ class TISProtocolHandler:
             additional_bytes=[entity.channel_number, 0x00, 0x00, 0x00],
         )
 
-    def generate_control_update_packet(self, entity) -> TISPacket:
+    @staticmethod
+    def generate_control_update_packet(entity) -> TISPacket:
         """
         Generate a packet to update the device control.
 
@@ -101,7 +100,8 @@ class TISProtocolHandler:
             additional_bytes=[],
         )
 
-    def generate_discovery_packet(self) -> TISPacket:
+    @staticmethod
+    def generate_discovery_packet() -> TISPacket:
         """
         Generate a packet to discover devices on the network.
 
