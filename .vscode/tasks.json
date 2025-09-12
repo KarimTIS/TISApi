@@ -30,8 +30,10 @@
         {
             "label": "Upload Package",
             "type": "shell",
-            "command": "twine",
+            "command": "py",
             "args": [
+                "-m",
+                "twine",
                 "upload",
                 "dist/*"
             ],
