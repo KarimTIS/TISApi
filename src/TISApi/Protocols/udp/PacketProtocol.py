@@ -7,6 +7,7 @@ from TISApi.shared import ack_events
 from .PacketHandlers.ControlResponseHandler import handle_control_response
 from .PacketHandlers.DiscoveryFeedbackHandler import handle_discovery_feedback
 from .PacketHandlers.UpdateResponseHandler import handle_update_response
+from .PacketHandlers.BinaryFeedbackHandler import handle_binary_feedback
 
 import socket as Socket
 from homeassistant.core import HomeAssistant
@@ -16,6 +17,7 @@ OPERATIONS_DICT = {
     (0x00, 0x32): handle_control_response,
     (0x00, 0x0F): handle_discovery_feedback,
     (0x00, 0x34): handle_update_response,
+    (0xEF, 0xFF): handle_binary_feedback,
 }
 
 
