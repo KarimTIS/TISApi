@@ -27,7 +27,7 @@ def build_packet(
     source_mac: str = "CB:CB:CB:CB:CB:CB:CB:CB",
     device_id: list = [],
     source_device_id: list = [0x01, 0xFE],
-    additional_packets: list = [],
+    additional_bytes: list = [],
     header="SMARTCLOUD",
 ):
 
@@ -36,21 +36,18 @@ def build_packet(
     header_bytes = [ord(char) for char in header]
     source_mac = [int(part, 16) for part in source_mac.split(":")]
     destination_mac = [int(part, 16) for part in destination_mac.split(":")]
-    # TODO: modify length
-    # length = 21 + len(additional_packets)
-    length = 11 + len(additional_packets)
+
+    length = 11 + len(additional_bytes)
     packet = (
         ip_bytes
         + header_bytes
         + [0xAA, 0xAA]
         + [length]
-        # + source_mac
         + source_device_id
         + [0xFF, 0xFE]
         + operation_code
-        # + destination_mac
         + device_id
-        + additional_packets
+        + additional_bytes
     )
     packet = packCRC(packet)
     return packet
