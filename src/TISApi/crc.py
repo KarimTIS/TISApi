@@ -1,6 +1,11 @@
+# Import the ctypes library to work with C-compatible data types.
+# This is used to ensure integer operations (like bit shifts and overflows)
+# behave exactly as they would in C, which is crucial for standard CRC algorithms.
 from ctypes import *
 
 # -------------------------------------- #
+# A pre-computed lookup table for the CRC-16 algorithm.
+# Using this table is much faster than calculating the CRC bit-by-bit for each byte.
 CRC_TAB = [
     0x0000,
     0x1021,
@@ -263,31 +268,59 @@ CRC_TAB = [
 
 # -------------------------------------- #
 def bytes(intParam):
+    """Splits a 16-bit integer into its high and low 8-bit bytes."""
+    # divmod(a, b) returns a tuple containing the quotient and remainder (a // b, a % b).
+    # For 0x100 (256), this effectively separates the integer into its high byte and low byte.
+    # Example: bytes(0x1234) -> (0x12, 0x34)
     return divmod(intParam, 0x100)
 
 
 # -------------------------------------- #
 def packCRC(ptr):
+    """Calculates a 16-bit CRC and appends it to the input byte list."""
+    # Initialize a 16-bit unsigned short for the CRC calculation.
     crc = c_ushort(0)
+
+    # Iterate over the packet payload. The TIS protocol's header is 16 bytes long,
+    # so the CRC is calculated on the data that comes after it.
     for i in range(len(ptr) - 16):
-        data = c_ubyte(crc.value >> 8)
-        crc.value <<= 8
+        # This is the core of the table-lookup CRC algorithm.
+        # It performs XOR and bit-shifting operations using the pre-computed table.
+        data = c_ubyte(crc.value >> 8)  # Get the high byte of the current CRC.
+        crc.value <<= 8  # Shift CRC left by 8 bits.
+        # XOR the high byte with the next byte of data to get an index for the CRC table.
         reg = c_ubyte(data.value ^ ptr[i + 16])
+        # XOR the CRC register with the value from the lookup table.
         crc = c_ushort(crc.value ^ CRC_TAB[reg.value])
+
+    # After the loop, split the final 16-bit CRC value into two 8-bit bytes.
     crcValueH, crcValueL = bytes(crc.value)
+
+    # Append the high and low bytes of the CRC to the end of the packet.
     ptr.append(crcValueH)
     ptr.append(crcValueL)
+
     return ptr
 
 
 # -------------------------------------- #
 def checkCRC(ptr):
+    """Verifies the CRC of a received packet to ensure data integrity."""
+    # Remove the last two bytes from the packet, which are the received CRC.
+    # .pop() removes the last item, so we get the Low byte, then the High byte.
     crcValueL = ptr.pop()
     crcValueH = ptr.pop()
+
+    # Recalculate the CRC on the rest of the packet (without the original CRC).
     targPtr = packCRC(ptr)
+
+    # Check if the newly calculated CRC bytes match the ones we removed.
+    # Note: The comparison is done against the end of the newly packed list.
     if (targPtr[len(targPtr) - 1] == crcValueL) and (
         targPtr[len(targPtr) - 2] == crcValueH
     ):
+        # If they match, the packet is valid.
         return True
     else:
+        # If they don't match, the packet is corrupted.
         return False
