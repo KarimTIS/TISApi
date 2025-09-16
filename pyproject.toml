@@ -13,6 +13,11 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: POSIX :: Linux",
 ]
+
+[[project.authors]]
+name = "Karim Bahgat"
+email = "karim@tiscontrol.com"
+
 [[project.authors]]
 name = "Ibrahim Mohamed"
 email = "ibrali2001.ia@gmail.com"
