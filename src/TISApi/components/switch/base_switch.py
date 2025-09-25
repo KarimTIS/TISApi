@@ -128,32 +128,3 @@ class BaseTISSwitch:
         """Turn the switch off by sending the off_packet."""
         # Send the pre-generated 'off' packet and wait for an acknowledgement (ack).
         return await self.api.protocol.sender.send_packet_with_ack(self.off_packet)
-
-    async def async_turn_on(self, **kwargs: Any) -> None:
-        """Turn the switch on."""
-        # Attempt to turn the switch on and wait for the result.
-        result = await self.turn_switch_on(**kwargs)
-        if result:
-            # Optimistic update: assume the command succeeded if we got an ack.
-            self._state = STATE_ON
-        else:
-            # If no ack was received, the device is likely offline.
-            self._state = STATE_UNKNOWN
-            # Fire an event to notify other entities that this device is offline.
-            event_data = {
-                "device_id": self.device_id,
-                "feedback_type": "offline_device",
-            }
-            self.hass.bus.async_fire(str(self.device_id), event_data)
-
-        # Schedule a state update in Home Assistant's UI.
-        self.schedule_update_ha_state()
-
-    async def async_turn_off(self, **kwargs: Any) -> None:
-        """Turn the switch off."""
-        # Send the 'off' packet and wait for an acknowledgement.
-        result = await self.turn_switch_off(**kwargs)
-
-        # Optimistically update the state based on whether the command was acknowledged.
-        self._state = STATE_OFF if result else STATE_UNKNOWN
-        self.schedule_update_ha_state()
