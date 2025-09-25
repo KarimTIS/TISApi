@@ -1,6 +1,5 @@
 # Import necessary types and helpers from Python's standard library.
 from collections.abc import Callable
-from math import ceil
 from typing import Any, Optional
 
 # Import the base class for switch entities from Home Assistant.
@@ -120,11 +119,21 @@ class BaseTISSwitch(SwitchEntity):
             finally:
                 self._listener = None
 
+    async def turn_switch_on(self, **kwargs: Any) -> None:
+        """Turn the switch on by sending the on_packet."""
+        # Send the pre-generated 'on' packet and wait for an acknowledgement (ack).
+        return await self.api.protocol.sender.send_packet_with_ack(self.on_packet)
+
+    async def turn_switch_off(self, **kwargs: Any) -> None:
+        """Turn the switch off by sending the off_packet."""
+        # Send the pre-generated 'off' packet and wait for an acknowledgement (ack).
+        return await self.api.protocol.sender.send_packet_with_ack(self.off_packet)
+
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the switch on."""
-        # Send the pre-generated 'on' packet and wait for an acknowledgement (ack).
-        ack_status = await self.api.protocol.sender.send_packet_with_ack(self.on_packet)
-        if ack_status:
+        # Attempt to turn the switch on and wait for the result.
+        result = await self.turn_switch_on(**kwargs)
+        if result:
             # Optimistic update: assume the command succeeded if we got an ack.
             self._state = STATE_ON
         else:
@@ -143,9 +152,8 @@ class BaseTISSwitch(SwitchEntity):
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn the switch off."""
         # Send the 'off' packet and wait for an acknowledgement.
-        ack_status = await self.api.protocol.sender.send_packet_with_ack(
-            self.off_packet
-        )
+        result = await self.turn_switch_off(**kwargs)
+
         # Optimistically update the state based on whether the command was acknowledged.
-        self._state = STATE_OFF if ack_status else STATE_UNKNOWN
+        self._state = STATE_OFF if result else STATE_UNKNOWN
         self.schedule_update_ha_state()
