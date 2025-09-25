@@ -3,7 +3,7 @@ from collections.abc import Callable
 from typing import Any, Optional
 
 # Import the base class for switch entities from Home Assistant.
-from homeassistant.components.switch import SwitchEntity
+# from homeassistant.components.switch import SwitchEntity
 
 # Import constants used for state management and event listening.
 from homeassistant.const import MATCH_ALL, STATE_OFF, STATE_ON, STATE_UNKNOWN
@@ -17,7 +17,7 @@ from ...Protocols.udp.ProtocolHandler import (
 )  # TIS protocol specifics.
 
 
-class BaseTISSwitch(SwitchEntity):
+class BaseTISSwitch:
     """Base class for TIS switches, providing common functionality."""
 
     def __init__(
