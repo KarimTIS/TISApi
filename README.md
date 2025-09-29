@@ -1,7 +1,7 @@
 # TISApi
 
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
-![Version 0.0.7](https://img.shields.io/badge/version-0.0.7-blue)
+![Version 0.1.0](https://img.shields.io/badge/version-0.1.0-blue)
 ![License MIT](https://img.shields.io/badge/license-MIT-green)
 ![Python](https://img.shields.io/badge/python-3.11+-orange)
 ![signed](https://img.shields.io/badge/signed-yes-green)
@@ -24,6 +24,23 @@ You can install TISApi by adding it to your Manifest file or by using pip. Here'
 ```bash
 pip install TISApi
 ```
+
+## Verifying Package Signatures
+
+This package is signed with GPG to ensure authenticity. Follow these steps to verify:
+
+1. **Install GPG**: Ensure you have GPG installed (`gpg --version`).
+
+2. **Get My Public Key**:
+   - Import from a keyserver: `gpg --keyserver hkp://keyserver.ubuntu.com --recv-keys A004DD548E5DB964ED28EAD7372417CD420AD769`
+
+3. **Download Files**: Get the `.tar.gz`, `.whl`, and `.asc` files from PyPI or GitHub Releases.
+
+4. **Verify**:
+
+   ```bash
+   gpg --verify tisapi-0.1.0.tar.gz.asc tisapi-0.1.0.tar.gz
+   gpg --verify tisapi-0.1.0-py3-none-any.whl.asc tisapi-0.1.0-py3-none-any.whl
 
 ## License
 
