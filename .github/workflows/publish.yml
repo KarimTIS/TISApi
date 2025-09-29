@@ -38,12 +38,9 @@ jobs:
         env:
           GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
         run: |
-          # Import the unencrypted GPG key
-          echo "$GPG_SIGNING_KEY" | gpg --batch --import
-
-          # Sign the files, providing an EMPTY passphrase to prevent prompts
-          echo "" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --detach-sign --armor dist/*.tar.gz
-          echo "" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --detach-sign --armor dist/*.whl
+          echo "$GPG_SIGNING_KEY" | gpg --import
+          gpg --detach-sign --armor dist/*.tar.gz
+          gpg --detach-sign --armor dist/*.whl
 
       - name: Publish to PyPI
         env:
