@@ -32,7 +32,7 @@ This package is signed with GPG to ensure authenticity. Follow these steps to ve
 1. **Install GPG**: Ensure you have GPG installed (`gpg --version`).
 
 2. **Get My Public Key**:
-   - Import from a keyserver: `gpg --keyserver hkp://keyserver.ubuntu.com --recv-keys A004DD548E5DB964ED28EAD7372417CD420AD769`
+   - Import from a keyserver: `gpg --keyserver hkp://keyserver.ubuntu.com --recv-keys E896735458D3FE00A6F593A712A4B1572AACB7CC`
 
 3. **Download Files**: Get the `.tar.gz`, `.whl`, and `.asc` files from PyPI or GitHub Releases.
 
@@ -45,3 +45,4 @@ This package is signed with GPG to ensure authenticity. Follow these steps to ve
 ## License
 
 TISApi is licensed under the MIT license. See the [LICENSE](https://github.com/KarimTIS/TISApi/blob/main/LICENSE) file for details.
+
