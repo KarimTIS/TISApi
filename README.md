@@ -1,7 +1,7 @@
 # TISApi
 
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
-![Version 0.0.7](https://img.shields.io/badge/version-0.0.6-blue)
+![Version 0.0.7](https://img.shields.io/badge/version-0.0.7-blue)
 ![License MIT](https://img.shields.io/badge/license-MIT-green)
 ![Python](https://img.shields.io/badge/python-3.11+-orange)
 ![signed](https://img.shields.io/badge/signed-yes-green)
@@ -27,4 +27,4 @@ pip install TISApi
 
 ## License
 
-TISApi is licensed under the MIT license. See the [LICENSE](https://github.com/IbrahimMohamed2001/TISApi/blob/main/LICENSE) file for details.
+TISApi is licensed under the MIT license. See the [LICENSE](https://github.com/KarimTIS/TISApi/blob/main/LICENSE) file for details.

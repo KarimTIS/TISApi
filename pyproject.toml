@@ -23,8 +23,8 @@ name = "Ibrahim Mohamed"
 email = "ibrali2001.ia@gmail.com"
 
 [project.urls]
-Homepage = "https://github.com/IbrahimMohamed2001"
-Issues = "https://github.com/IbrahimMohamed2001/issues"
+Homepage = "https://github.com/KarimTIS"
+Issues = "https://github.com/KarimTIS/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/TISApi"]
