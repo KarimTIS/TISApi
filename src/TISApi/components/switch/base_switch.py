@@ -2,9 +2,6 @@
 from collections.abc import Callable
 from typing import Any, Optional
 
-# Import the base class for switch entities from Home Assistant.
-# from homeassistant.components.switch import SwitchEntity
-
 # Import constants used for state management and event listening.
 from homeassistant.const import MATCH_ALL, STATE_OFF, STATE_ON, STATE_UNKNOWN
 from homeassistant.core import Event, callback
@@ -34,15 +31,7 @@ class BaseTISSwitch:
         super().__init__(**kwargs)
 
         self.api = tis_api
-        # Set the initial state to unknown until the first update is received.
         self._state = STATE_UNKNOWN
-        self._attr_is_on: Optional[bool] = None
-
-        # Create a unique ID for this entity, required by Home Assistant.
-        # This helps HA track the entity across restarts.
-        self._attr_unique_id = (
-            f"tis_{'_'.join(map(str, device_id))}_ch{int(channel_number)}"
-        )
 
         # Store device-specific information.
         self.device_id = device_id
@@ -53,7 +42,6 @@ class BaseTISSwitch:
             None  # To hold the event listener unsubscribe function.
         )
 
-        # --- Optimization: Pre-generate command packets ---
         # This avoids rebuilding the byte arrays every time a command is sent.
         self.on_packet: TISPacket = TISProtocolHandler.generate_control_on_packet(self)
         self.off_packet: TISPacket = TISProtocolHandler.generate_control_off_packet(
@@ -88,6 +76,7 @@ class BaseTISSwitch:
                         self._state = (
                             STATE_ON if int(channel_value) == 100 else STATE_OFF
                         )
+                        self._attr_is_on = self._state == STATE_ON
 
                 # A response to a general status update request.
                 elif feedback_type == "update_response":
@@ -95,10 +84,12 @@ class BaseTISSwitch:
                     # The status of each channel is in an array; get this channel's status.
                     channel_status = int(additional_bytes[self.channel_number])
                     self._state = STATE_ON if channel_status > 0 else STATE_OFF
+                    self._attr_is_on = self._state == STATE_ON
 
                 # The device has been reported as offline.
                 elif feedback_type == "offline_device":
                     self._state = STATE_UNKNOWN
+                    self._attr_is_on = None
 
                 # Tell Home Assistant to update the state in the frontend.
                 self.schedule_update_ha_state()
