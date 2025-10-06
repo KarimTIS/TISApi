@@ -1,10 +1,6 @@
 # Import necessary types and helpers from Python's standard library.
 from collections.abc import Callable
-from typing import Any, Optional
-
-# Import constants used for state management and event listening.
-from homeassistant.const import MATCH_ALL, STATE_OFF, STATE_ON, STATE_UNKNOWN
-from homeassistant.core import Event, callback
+from typing import Any
 
 # Import custom modules from this integration.
 from ...api import TISApi  # The main API for communicating with TIS devices.
@@ -14,33 +10,31 @@ from ...Protocols.udp.ProtocolHandler import (
 )  # TIS protocol specifics.
 
 
-class BaseTISSwitch:
+class TISAPISwitch:
     """Base class for TIS switches, providing common functionality."""
 
     def __init__(
         self,
         tis_api: TISApi,
-        *,
         channel_number: int,
         device_id: list[int],
         gateway: str,
         is_protected: bool = False,
-        **kwargs: Any,
+        switch_name: str | None = None,
     ) -> None:
         """Initialize the base switch attributes."""
-        super().__init__(**kwargs)
-
         self.api = tis_api
-        self._state = STATE_UNKNOWN
 
         # Store device-specific information.
         self.device_id = device_id
+        self._name = (
+            switch_name if switch_name else f"Switch {device_id} {channel_number}"
+        )
         self.gateway = gateway
         self.channel_number = int(channel_number)
         self.is_protected = is_protected
-        self._listener: Optional[Callable] = (
-            None  # To hold the event listener unsubscribe function.
-        )
+        self._is_on: bool | None = None
+        self._update_callback: Callable[[], None] | None = None
 
         # This avoids rebuilding the byte arrays every time a command is sent.
         self.on_packet: TISPacket = TISProtocolHandler.generate_control_on_packet(self)
@@ -51,71 +45,59 @@ class BaseTISSwitch:
             TISProtocolHandler.generate_control_update_packet(self)
         )
 
-    async def async_added_to_hass(self) -> None:
-        """Run when the entity is added to Home Assistant. Subscribe to events."""
+    @property
+    def is_on(self) -> bool | None:
+        """Return true if the switch is on."""
+        return self._is_on
 
-        # Define a callback function to handle incoming TIS events.
-        @callback
-        def _handle_event(event: Event) -> None:
-            """Handle incoming TIS events from the event bus and update the switch's state."""
+    @property
+    def name(self) -> str:
+        """Return the name of the switch."""
+        return self._name
 
-            # Check if the event is intended for this specific device.
-            # The event_type is used here as a filter for the device_id.
-            if event.event_type == str(self.device_id):
-                feedback_type = event.data.get("feedback_type")
+    @property
+    def unique_id(self) -> str:
+        """Return the unique ID for this switch."""
+        return f"tis_{'_'.join(map(str, self.device_id))}_ch{self.channel_number}"
 
-                # --- Handle different types of feedback from the device ---
+    def register_callback(self, callback: Callable[[], None]) -> None:
+        """Register a callback function to call when the state changes."""
+        self._update_callback = callback
 
-                # A direct response to a control command.
-                if feedback_type == "control_response":
-                    channel_value = event.data["additional_bytes"][2]
-                    channel_number = event.data["channel_number"]
-                    # Ensure the response is for this specific channel.
-                    if int(channel_number) == self.channel_number:
-                        # A value of 100 typically means ON (100% brightness/power).
-                        self._state = (
-                            STATE_ON if int(channel_value) == 100 else STATE_OFF
-                        )
-                        self._attr_is_on = self._state == STATE_ON
+    def process_update(self, event_data: dict[str, Any]) -> None:
+        """Process an incoming event from the TIS gateway and update state."""
+        new_state: bool | None = self._is_on
+        feedback_type = event_data.get("feedback_type")
 
-                # A response to a general status update request.
-                elif feedback_type == "update_response":
-                    additional_bytes = event.data["additional_bytes"]
-                    # The status of each channel is in an array; get this channel's status.
-                    channel_status = int(additional_bytes[self.channel_number])
-                    self._state = STATE_ON if channel_status > 0 else STATE_OFF
-                    self._attr_is_on = self._state == STATE_ON
+        if feedback_type == "control_response":
+            if int(event_data["channel_number"]) == self.channel_number:
+                channel_value = event_data["additional_bytes"][2]
+                new_state = int(channel_value) == 100
 
-                # The device has been reported as offline.
-                elif feedback_type == "offline_device":
-                    self._state = STATE_UNKNOWN
-                    self._attr_is_on = None
+        elif feedback_type == "update_response":
+            additional_bytes = event_data["additional_bytes"]
+            channel_status = int(additional_bytes[self.channel_number])
+            new_state = channel_status > 0
 
-                # Tell Home Assistant to update the state in the frontend.
-                self.schedule_update_ha_state()
+        elif feedback_type == "offline_device":
+            new_state = None
 
-        # Subscribe the handler to all events on the Home Assistant event bus.
-        # The filtering happens inside _handle_event.
-        self._listener = self.hass.bus.async_listen(MATCH_ALL, _handle_event)
+        # If the state changed, update it and call the callback to notify listeners.
+        if new_state != self._is_on:
+            self._is_on = new_state
+            if self._update_callback:
+                self._update_callback()
 
-        # Request the current state of the switch from the device upon startup.
-        await self.api.protocol.sender.send_packet(self.update_packet)
-
-    async def async_will_remove_from_hass(self) -> None:
-        """Run when the entity is about to be removed. Unsubscribe from events."""
-        # Clean up the event listener to prevent memory leaks.
-        if callable(self._listener):
-            try:
-                self._listener()
-            finally:
-                self._listener = None
-
-    async def turn_switch_on(self, **kwargs: Any) -> None:
+    async def turn_switch_on(self) -> bool | None:
         """Turn the switch on by sending the on_packet."""
         # Send the pre-generated 'on' packet and wait for an acknowledgement (ack).
         return await self.api.protocol.sender.send_packet_with_ack(self.on_packet)
 
-    async def turn_switch_off(self, **kwargs: Any) -> None:
+    async def turn_switch_off(self) -> bool | None:
         """Turn the switch off by sending the off_packet."""
         # Send the pre-generated 'off' packet and wait for an acknowledgement (ack).
         return await self.api.protocol.sender.send_packet_with_ack(self.off_packet)
+
+    async def request_update(self) -> None:
+        """Send a request to the device for its current state."""
+        await self.api.protocol.sender.send_packet(self.update_packet)
