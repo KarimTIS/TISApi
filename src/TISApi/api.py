@@ -52,6 +52,9 @@ class TISApi:
 
     async def connect(self):
         """Establish the UDP connection and start listening for devices."""
+        # Initialize the data storage in Home Assistant if not already present.
+        self.hass.data[self.domain] = {}
+
         # Use the Home Assistant event loop for asyncio operations.
         self.loop = self.hass.loop
 
