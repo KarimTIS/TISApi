@@ -34,6 +34,7 @@ class TISAPISwitch:
         self.channel_number = int(channel_number)
         self.is_protected = is_protected
         self._is_on: bool | None = None
+        self._available: bool = True
         self._update_callback: Callable[[], None] | None = None
 
         # This avoids rebuilding the byte arrays every time a command is sent.
@@ -51,6 +52,11 @@ class TISAPISwitch:
         return self._is_on
 
     @property
+    def available(self) -> bool:
+        """Return True if the switch is available."""
+        return self._available
+
+    @property
     def name(self) -> str:
         """Return the name of the switch."""
         return self._name
@@ -66,27 +72,43 @@ class TISAPISwitch:
 
     def process_update(self, event_data: dict[str, Any]) -> None:
         """Process an incoming event from the TIS gateway and update state."""
+        state_changed = False
+        availability_changed = False
         new_state: bool | None = self._is_on
+
         feedback_type = event_data.get("feedback_type")
 
-        if feedback_type == "control_response":
-            if int(event_data["channel_number"]) == self.channel_number:
-                channel_value = event_data["additional_bytes"][2]
-                new_state = int(channel_value) == 100
+        # Any valid response from the device means it is online.
+        if feedback_type in ("control_response", "update_response"):
+            if not self._available:
+                self._available = True
+                availability_changed = True
 
-        elif feedback_type == "update_response":
-            additional_bytes = event_data["additional_bytes"]
-            channel_status = int(additional_bytes[self.channel_number])
-            new_state = channel_status > 0
+            if feedback_type == "control_response":
+                if int(event_data["channel_number"]) == self.channel_number:
+                    channel_value = event_data["additional_bytes"][2]
+                    new_state = int(channel_value) == 100
+
+            elif feedback_type == "update_response":
+                additional_bytes = event_data["additional_bytes"]
+                channel_status = int(additional_bytes[self.channel_number])
+                new_state = channel_status > 0
 
         elif feedback_type == "offline_device":
-            new_state = None
+            # The gateway explicitly told us the device is offline.
+            if self._available:
+                self._available = False
+                availability_changed = True
+            new_state = None  # State is unknown when offline
 
-        # If the state changed, update it and call the callback to notify listeners.
+        # Check if the on/off state changed
         if new_state != self._is_on:
             self._is_on = new_state
-            if self._update_callback:
-                self._update_callback()
+            state_changed = True
+
+        # If either state or availability changed, call the callback to notify listeners.
+        if (state_changed or availability_changed) and self._update_callback:
+            self._update_callback()
 
     async def turn_switch_on(self) -> bool | None:
         """Turn the switch on by sending the on_packet."""
