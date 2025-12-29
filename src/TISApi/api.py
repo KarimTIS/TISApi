@@ -12,9 +12,8 @@ from TISApi.Protocols.udp.ProtocolHandler import (
     TISPacket,
     TISProtocolHandler,
 )
-
-# Import a helper dictionary that maps device types to appliances.
-from .DiscoveryHelpers import DEVICE_APPLIANCES
+from TISApi.DiscoveryHelpers import DEVICE_APPLIANCES
+from TISApi.shared import shared_devices, discovered_devices
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -54,9 +53,6 @@ class TISApi:
 
     async def connect(self):
         """Establish the UDP connection and start listening for devices."""
-        # Initialize the data storage in Home Assistant if not already present.
-        self.hass.data[self.domain] = {}
-
         # Use the Home Assistant event loop for asyncio operations.
         self.loop = self.hass.loop
 
@@ -82,8 +78,6 @@ class TISApi:
 
     async def scan_devices(self, prodcast_attempts=10):
         """Scan the network for TIS devices by broadcasting a discovery packet."""
-        # Clear previous discovery results to ensure a fresh scan.
-        self.hass.data[self.domain]["discovered_devices"] = []
 
         # Broadcast the discovery packet multiple times for reliability, as UDP is connectionless.
         for _ in range(prodcast_attempts):
@@ -92,28 +86,24 @@ class TISApi:
             await asyncio.sleep(1)
 
         # Process the raw data from devices that responded to the discovery broadcast.
-        devices = [
-            {
-                "device_id": device["device_id"],
-                "device_type_code": device["device_type"],
-                # Look up the human-readable device name using the device type code.
-                "device_type_name": self.devices_dict.get(
-                    tuple(device["device_type"]), tuple(device["device_type"])
-                ),
-                # Format the source IP address into a standard string format (e.g., "192.168.1.10").
-                "gateway": ".".join(map(str, device["source_ip"])),
-            }
-            # The protocol handler populates 'discovered_devices' with raw device info.
-            for device in self.hass.data[self.domain]["discovered_devices"]
-        ]
-
-        # Store the formatted list of discovered devices in the Home Assistant data dictionary.
-        self.hass.data[self.domain]["devices"] = devices
+        for device in discovered_devices:
+            shared_devices.append(
+                {
+                    "device_id": device["device_id"],
+                    "device_type_code": device["device_type"],
+                    # Look up the human-readable device name using the device type code.
+                    "device_type_name": self.devices_dict.get(
+                        tuple(device["device_type"]), tuple(device["device_type"])
+                    ),
+                    # Format the source IP address into a standard string format (e.g., "192.168.1.10").
+                    "gateway": ".".join(map(str, device["source_ip"])),
+                }
+            )
 
     async def get_entities(self, platform: str):
         """Get a list of appliances (entities) for a specific Home Assistant platform (e.g., 'light', 'switch')."""
         # Load the list of devices discovered during the scan.
-        devices = self.hass.data[self.domain]["devices"]
+        devices = shared_devices
 
         # Parse the device list to generate a structured dictionary of appliances.
         appliances = self.parse_saved_devices(devices)
