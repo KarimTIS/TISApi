@@ -1,4 +1,4 @@
-from TISApi.shared import discovered_devices
+from TISApi.shared import shared_data
 
 
 async def handle_discovery_feedback(hass, info: dict):
@@ -14,7 +14,8 @@ async def handle_discovery_feedback(hass, info: dict):
     # Check if a device with the same device_id already exists in our list of discovered devices.
     # This prevents adding duplicate entries if a device responds multiple times.
     if not any(
-        device["device_id"] == info["device_id"] for device in discovered_devices
+        device["device_id"] == info["device_id"]
+        for device in shared_data["discovered_devices"]
     ):
         # If the device is new, append its information to the shared list.
-        discovered_devices.append(info)
+        shared_data["discovered_devices"].append(info)

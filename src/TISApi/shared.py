@@ -1,5 +1,6 @@
 ack_events = {}
 
-discovered_devices = []
-
-shared_devices = []
+shared_data = {
+    "discovered_devices": [],
+    "devices": [],
+}

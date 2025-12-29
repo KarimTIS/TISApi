@@ -50,11 +50,6 @@ class PacketProtocol:
         self.socket = socket
         self.hass = hass
 
-        # --- State attributes (can be used for device discovery, etc.) ---
-        self.searching = False
-        self.search_results = []
-        self.discovered_devices = []
-
         # --- Instantiate the core components of the protocol ---
 
         # The coordinator manages asyncio.Events for matching sent packets with received acks.
