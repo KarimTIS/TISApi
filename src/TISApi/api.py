@@ -76,11 +76,11 @@ class TISApi:
         # Once connected, immediately scan for devices on the network.
         await self.scan_devices()
 
-    async def scan_devices(self, prodcast_attempts=10):
+    async def scan_devices(self, broadcast_attempts=10):
         """Scan the network for TIS devices by broadcasting a discovery packet."""
 
         # Broadcast the discovery packet multiple times for reliability, as UDP is connectionless.
-        for _ in range(prodcast_attempts):
+        for _ in range(broadcast_attempts):
             await self.protocol.sender.broadcast_packet(self.discovery_packet)
             # Wait for a short period to allow devices on the network time to respond.
             await asyncio.sleep(1)
