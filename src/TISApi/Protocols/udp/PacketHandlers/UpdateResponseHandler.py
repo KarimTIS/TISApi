@@ -1,6 +1,8 @@
 from homeassistant.core import HomeAssistant
 import logging
 
+_LOGGER = logging.getLogger(__name__)
+
 
 async def handle_update_response(hass: HomeAssistant, info: dict):
     """
@@ -32,4 +34,4 @@ async def handle_update_response(hass: HomeAssistant, info: dict):
         hass.bus.async_fire(str(info["device_id"]), event_data)
     except Exception as e:
         # Log any errors that occur during the event firing process.
-        logging.error(f"Error firing update_response event: {e}")
+        _LOGGER.error(f"Error firing update_response event: {e}")

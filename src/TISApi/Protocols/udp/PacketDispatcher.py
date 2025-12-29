@@ -1,6 +1,7 @@
 from homeassistant.core import HomeAssistant
 import logging
 
+_LOGGER = logging.getLogger(__name__)
 
 class PacketDispatcher:
     """
@@ -40,9 +41,9 @@ class PacketDispatcher:
                 await packet_handler(self.hass, info)
             else:
                 # If the operation code is not in our dictionary, log it as an error.
-                logging.error(
+                _LOGGER.error(
                     f"Unknown operation code received: {info['operation_code']}"
                 )
         except Exception as e:
             # Catch any unexpected errors during the dispatch process to prevent a crash.
-            logging.error(f"Error dispatching packet: {e} , info: {info}")
+            _LOGGER.error(f"Error dispatching packet: {e} , info: {info}")

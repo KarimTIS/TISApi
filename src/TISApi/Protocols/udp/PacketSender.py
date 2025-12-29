@@ -6,6 +6,8 @@ from collections import deque
 from TISApi.Protocols.udp.AckCoordinator import AckCoordinator
 from TISApi.Protocols.udp.ProtocolHandler import TISPacket
 
+_LOGGER = logging.getLogger(__name__)
+
 
 class PacketSender:
     """Manages the sending of UDP packets with advanced features like acknowledgements, retries, and debouncing."""
@@ -93,13 +95,13 @@ class PacketSender:
                 return True
             except asyncio.TimeoutError:
                 # If the wait times out, log the failure and loop to the next attempt.
-                logging.error(
+                _LOGGER.error(
                     f"ack not received within {timeout} seconds, attempt {attempt + 1}"
                 )
 
         # If all attempts fail, clean up the event and log the final failure.
         self.coordinator.remove_ack_event(unique_id)
-        logging.error(f"ack not received after {attempts} attempts")
+        _LOGGER.error(f"ack not received after {attempts} attempts")
         return False
 
     async def broadcast_packet(self, packet: TISPacket):

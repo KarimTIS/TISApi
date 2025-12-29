@@ -6,6 +6,7 @@ from TISApi.Protocols.udp.PacketDispatcher import PacketDispatcher
 import logging
 from homeassistant.core import HomeAssistant
 
+_LOGGER = logging.getLogger(__name__)
 
 class PacketReceiver:
     """
@@ -38,7 +39,7 @@ class PacketReceiver:
         Callback executed by asyncio when the datagram endpoint is set up.
         """
         self.transport = transport
-        logging.info("UDP connection made and listener is active.")
+        _LOGGER.info("UDP connection made and listener is active.")
 
     def datagram_received(self, data, addr):
         """
@@ -63,4 +64,4 @@ class PacketReceiver:
         except Exception as e:
             # Catch any errors during parsing to prevent a single malformed packet
             # from crashing the entire listener.
-            logging.error(f"Error processing received datagram: {e}")
+            _LOGGER.error(f"Error processing received datagram: {e}")

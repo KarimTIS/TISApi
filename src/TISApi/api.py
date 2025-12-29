@@ -1,7 +1,7 @@
 # Import necessary libraries and modules.
-import asyncio  # For asynchronous I/O operations.
-import logging  # For logging messages.
-import socket  # For low-level network operations.
+import asyncio
+import logging
+import socket
 
 # Import specific components from Home Assistant core.
 from homeassistant.core import HomeAssistant
@@ -15,6 +15,8 @@ from TISApi.Protocols.udp.ProtocolHandler import (
 
 # Import a helper dictionary that maps device types to appliances.
 from .DiscoveryHelpers import DEVICE_APPLIANCES
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class TISApi:
@@ -72,7 +74,7 @@ class TISApi:
             )
         except Exception as e:
             # Log and raise an error if the connection fails.
-            logging.error("Error connecting to TIS API %s", e)
+            _LOGGER.error("Error connecting to TIS API %s", e)
             raise ConnectionError
 
         # Once connected, immediately scan for devices on the network.
@@ -115,7 +117,7 @@ class TISApi:
 
         # Parse the device list to generate a structured dictionary of appliances.
         appliances = self.parse_saved_devices(devices)
-        logging.warning(
+        _LOGGER.warning(
             f"appliances for platform {platform}: {appliances.get(platform, [])}"
         )
 

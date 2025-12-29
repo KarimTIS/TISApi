@@ -2,6 +2,7 @@
 from TISApi.BytesHelper import checkCRC
 import logging
 
+_LOGGER = logging.getLogger(__name__)
 
 class PacketExtractor:
     """
@@ -42,6 +43,6 @@ class PacketExtractor:
 
         else:
             # If the CRC check fails, the packet is likely corrupted. Log an error.
-            logging.error(f"CRC check failed for packet: {packet}")
+            _LOGGER.error(f"CRC check failed for packet: {packet}")
 
         return info
