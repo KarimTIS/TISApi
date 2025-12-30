@@ -1,18 +1,15 @@
-from asyncio import get_event_loop, AbstractEventLoop
 import socket
+from asyncio import get_event_loop
 
 # Import the main protocol class that orchestrates the sender, receiver, etc.
+from TISApi.api import TISApi
 from TISApi.Protocols.udp.PacketProtocol import PacketProtocol
-from homeassistant.core import HomeAssistant
 
 # Get the global asyncio event loop (though the function below correctly uses a passed loop).
 
 
 async def setup_udp_protocol(
-    sock: socket,
-    udp_ip: str,
-    udp_port: int,
-    hass: HomeAssistant,
+    sock: socket, udp_ip: str, udp_port: int, tis_api: TISApi
 ) -> tuple[socket.socket, PacketProtocol]:
     """
     Initializes and configures an asyncio UDP datagram endpoint.
@@ -24,7 +21,7 @@ async def setup_udp_protocol(
     :param loop: The asyncio event loop.
     :param udp_ip: The target IP address for sending.
     :param udp_port: The port to listen on and send to.
-    :param hass: The Home Assistant instance.
+    :param tis_api: The TISApi instances.
     :return: A tuple containing the asyncio transport and the protocol instance.
     """
     # Get the current running event loop or make one.
@@ -34,7 +31,7 @@ async def setup_udp_protocol(
     transport, protocol = await loop.create_datagram_endpoint(
         # protocol_factory: A function that returns a new protocol instance.
         # We use a lambda to create an instance of our main PacketProtocol class.
-        protocol_factory=lambda: PacketProtocol(sock, udp_ip, udp_port, hass),
+        protocol_factory=lambda: PacketProtocol(sock, udp_ip, udp_port, tis_api),
         # remote_addr: Default destination for sending packets (can be overridden).
         remote_addr=(udp_ip, udp_port),
         # local_addr: The address and port to listen on.
