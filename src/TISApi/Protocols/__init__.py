@@ -2,14 +2,11 @@ import socket
 from asyncio import get_event_loop
 
 # Import the main protocol class that orchestrates the sender, receiver, etc.
-from TISApi.api import TISApi
 from TISApi.Protocols.udp.PacketProtocol import PacketProtocol
-
-# Get the global asyncio event loop (though the function below correctly uses a passed loop).
 
 
 async def setup_udp_protocol(
-    sock: socket, udp_ip: str, udp_port: int, tis_api: TISApi
+    sock: socket, udp_ip: str, udp_port: int, tis_api
 ) -> tuple[socket.socket, PacketProtocol]:
     """
     Initializes and configures an asyncio UDP datagram endpoint.
