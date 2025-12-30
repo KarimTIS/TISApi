@@ -53,6 +53,16 @@ class TISApi:
             TISProtocolHandler.generate_discovery_packet()
         )
 
+    async def consume_events(self):
+        """A generator that yields events as they arrive."""
+        while True:
+            # Wait until an item is available
+            event = await self.event_queue.get()
+            try:
+                yield event
+            finally:
+                self.event_queue.task_done()
+
     async def connect(self):
         """Establish the UDP connection and start listening for devices."""
         try:
