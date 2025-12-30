@@ -1,8 +1,10 @@
-# Import the CRC checking function and the logging module.
-from TISApi.BytesHelper import checkCRC
 import logging
 
+# Import the CRC checking function and the logging module.
+from TISApi.BytesHelper import checkCRC
+
 _LOGGER = logging.getLogger(__name__)
+
 
 class PacketExtractor:
     """
@@ -43,6 +45,6 @@ class PacketExtractor:
 
         else:
             # If the CRC check fails, the packet is likely corrupted. Log an error.
-            _LOGGER.error(f"CRC check failed for packet: {packet}")
+            _LOGGER.error("CRC check failed for packet: %s", str(packet))
 
         return info
