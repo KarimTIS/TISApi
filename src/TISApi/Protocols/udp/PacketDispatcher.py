@@ -1,7 +1,9 @@
-from homeassistant.core import HomeAssistant
 import logging
 
+from TISApi.api import TISApi
+
 _LOGGER = logging.getLogger(__name__)
+
 
 class PacketDispatcher:
     """
@@ -12,15 +14,15 @@ class PacketDispatcher:
     packet's operation code.
     """
 
-    def __init__(self, hass: HomeAssistant, OPERATIONS_DICT: dict):
+    def __init__(self, tis_api: TISApi, operations_dict: dict):
         """
         Initialize the PacketDispatcher.
 
-        :param hass: The Home Assistant instance, passed to handler functions.
-        :param OPERATIONS_DICT: A dictionary mapping operation codes to handler functions.
+        :param tis_api: The TISApi instance, passed to handler functions.
+        :param operations_dict: A dictionary mapping operation codes to handler functions.
         """
-        self.hass = hass
-        self.operations_dict = OPERATIONS_DICT
+        self.tis_api = tis_api
+        self.operations_dict = operations_dict
 
     async def dispatch_packet(self, info: dict):
         """
@@ -38,12 +40,12 @@ class PacketDispatcher:
             # If a handler function was found, execute it.
             if packet_handler != "unknown operation":
                 # The handler itself is an async function, so it must be awaited.
-                await packet_handler(self.hass, info)
+                await packet_handler(self.tis_api, info)
             else:
                 # If the operation code is not in our dictionary, log it as an error.
                 _LOGGER.error(
-                    f"Unknown operation code received: {info['operation_code']}"
+                    "Unknown operation code received: %s", str(info["operation_code"])
                 )
         except Exception as e:
             # Catch any unexpected errors during the dispatch process to prevent a crash.
-            _LOGGER.error(f"Error dispatching packet: {e} , info: {info}")
+            _LOGGER.error("Error dispatching packet: %s , info: %s", e, info)
