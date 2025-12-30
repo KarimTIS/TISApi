@@ -1,7 +1,7 @@
 # TISApi
 
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
-![Version 0.1.8](https://img.shields.io/badge/version-0.1.8-blue)
+![Version 0.1.9](https://img.shields.io/badge/version-0.1.9-blue)
 ![License MIT](https://img.shields.io/badge/license-MIT-green)
 ![Python](https://img.shields.io/badge/python-3.11+-orange)
 ![signed](https://img.shields.io/badge/signed-yes-green)
@@ -39,11 +39,9 @@ This package is signed with GPG to ensure authenticity. Follow these steps to ve
 4. **Verify**:
 
    ```bash
-   gpg --verify tisapi-0.1.0.tar.gz.asc tisapi-0.1.8.tar.gz
-   gpg --verify tisapi-0.1.0-py3-none-any.whl.asc tisapi-0.1.8-py3-none-any.whl
+   gpg --verify tisapi-0.1.0.tar.gz.asc tisapi-0.1.9.tar.gz
+   gpg --verify tisapi-0.1.0-py3-none-any.whl.asc tisapi-0.1.9-py3-none-any.whl
 
 ## License
 
 TISApi is licensed under the MIT license. See the [LICENSE](https://github.com/KarimTIS/TISApi/blob/main/LICENSE) file for details.
-
-
