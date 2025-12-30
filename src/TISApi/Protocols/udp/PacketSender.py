@@ -1,7 +1,7 @@
-from socket import socket, SOL_SOCKET, SO_BROADCAST
 import asyncio
 import logging
 from collections import deque
+from socket import SO_BROADCAST, SOL_SOCKET, socket
 
 from TISApi.Protocols.udp.AckCoordinator import AckCoordinator
 from TISApi.Protocols.udp.ProtocolHandler import TISPacket
@@ -12,10 +12,10 @@ _LOGGER = logging.getLogger(__name__)
 class PacketSender:
     """Manages the sending of UDP packets with advanced features like acknowledgements, retries, and debouncing."""
 
-    def __init__(self, socket: socket, coordinator: AckCoordinator, UDP_IP, UDP_PORT):
-        self.UDP_IP = UDP_IP
-        self.UDP_PORT = UDP_PORT
-        self.socket = socket
+    def __init__(self, sock: socket, coordinator: AckCoordinator, udp_ip, udp_port):
+        self.udp_ip = udp_ip
+        self.udp_port = udp_port
+        self.socket = sock
         # Configure the socket to allow sending broadcast packets (e.g., for device discovery).
         self.socket.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
 
@@ -33,7 +33,7 @@ class PacketSender:
 
     async def send_packet(self, packet: TISPacket):
         """Sends a single packet without waiting for an acknowledgement (fire-and-forget)."""
-        self.socket.sendto(packet.__bytes__(), (packet.destination_ip, self.UDP_PORT))
+        self.socket.sendto(packet.__bytes__(), (packet.destination_ip, self.udp_port))
 
     async def send_packet_with_ack(
         self,
@@ -96,15 +96,17 @@ class PacketSender:
             except asyncio.TimeoutError:
                 # If the wait times out, log the failure and loop to the next attempt.
                 _LOGGER.error(
-                    f"ack not received within {timeout} seconds, attempt {attempt + 1}"
+                    "ack not received within %s seconds, attempt %s",
+                    str(timeout),
+                    str(attempt + 1),
                 )
 
         # If all attempts fail, clean up the event and log the final failure.
         self.coordinator.remove_ack_event(unique_id)
-        _LOGGER.error(f"ack not received after {attempts} attempts")
+        _LOGGER.error("ack not received after %s attempts", str(attempts))
         return False
 
     async def broadcast_packet(self, packet: TISPacket):
         """Sends a packet to the network's broadcast address."""
         # '<broadcast>' is a special address that sends the packet to all devices on the subnet.
-        self.socket.sendto(packet.__bytes__(), ("<broadcast>", self.UDP_PORT))
+        self.socket.sendto(packet.__bytes__(), ("<broadcast>", self.udp_port))
