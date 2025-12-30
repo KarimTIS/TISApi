@@ -1,8 +1,9 @@
 """Class for handling the UDP protocol"""
 
 # Import helper functions and type hints.
-from ...BytesHelper import build_packet
 from typing import List
+
+from ...BytesHelper import build_packet
 
 
 class TISPacket:
