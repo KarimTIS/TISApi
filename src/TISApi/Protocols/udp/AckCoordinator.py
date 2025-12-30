@@ -8,6 +8,7 @@ from TISApi.shared import ack_events
 
 _LOGGER = logging.getLogger(__name__)
 
+
 class AckCoordinator:
     """
         Manages the lifecycle of asyncio.Event objects for acknowledgement (ack) handling.
@@ -31,7 +32,7 @@ class AckCoordinator:
         :param unique_id: A unique identifier for the command being sent.
         :return: The newly created asyncio.Event object.
         """
-        _LOGGER.error(f"Creating ack event for {unique_id}")
+        _LOGGER.error("Creating ack event for %s", str(unique_id))
         # Create a new event, which is initially in an 'unset' state.
         event = asyncio.Event()
         # Store the event in the shared dictionary, keyed by the command's unique ID.
