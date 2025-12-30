@@ -6,12 +6,10 @@ from TISApi.Protocols.udp.PacketProtocol import PacketProtocol
 from homeassistant.core import HomeAssistant
 
 # Get the global asyncio event loop (though the function below correctly uses a passed loop).
-loop = get_event_loop()
 
 
 async def setup_udp_protocol(
     sock: socket,
-    loop: AbstractEventLoop,
     udp_ip: str,
     udp_port: int,
     hass: HomeAssistant,
@@ -29,11 +27,14 @@ async def setup_udp_protocol(
     :param hass: The Home Assistant instance.
     :return: A tuple containing the asyncio transport and the protocol instance.
     """
+    # Get the current running event loop or make one.
+    loop = get_event_loop()
+
     # This is the core asyncio call to create a UDP endpoint (a listener).
     transport, protocol = await loop.create_datagram_endpoint(
         # protocol_factory: A function that returns a new protocol instance.
         # We use a lambda to create an instance of our main PacketProtocol class.
-        lambda: PacketProtocol(sock, udp_ip, udp_port, hass),
+        protocol_factory=lambda: PacketProtocol(sock, udp_ip, udp_port, hass),
         # remote_addr: Default destination for sending packets (can be overridden).
         remote_addr=(udp_ip, udp_port),
         # local_addr: The address and port to listen on.
