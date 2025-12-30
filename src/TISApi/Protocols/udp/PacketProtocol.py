@@ -1,30 +1,28 @@
+import socket as Socket
+
+from TISApi.api import TISApi
+
 # Import all the necessary components for the TIS protocol.
-from TISApi.BytesHelper import *
-from TISApi.Protocols.udp.PacketSender import PacketSender
-from TISApi.Protocols.udp.PacketReceiver import PacketReceiver
 from TISApi.Protocols.udp.AckCoordinator import AckCoordinator
-from TISApi.shared import ack_events
+from TISApi.Protocols.udp.PacketReceiver import PacketReceiver
+from TISApi.Protocols.udp.PacketSender import PacketSender
 
 # Import the specific handler functions for different types of received packets.
 from .PacketHandlers.ControlResponseHandler import handle_control_response
 from .PacketHandlers.DiscoveryFeedbackHandler import handle_discovery_feedback
 from .PacketHandlers.UpdateResponseHandler import handle_update_response
 
-import socket as Socket
-from homeassistant.core import HomeAssistant
-
-
 # --- Packet Routing Table ---
 # This dictionary is the core of the packet dispatching logic. It maps a packet's
 # operation code (as a tuple) to the specific function that should handle it.
 # This makes the system easy to extend with new packet types.
 OPERATIONS_DICT = {
-    (0x00, 0x32): handle_control_response,  # Response to a control command (on/off).
-    (
-        0x00,
-        0x0F,
-    ): handle_discovery_feedback,  # A device responding to a discovery broadcast.
-    (0x00, 0x34): handle_update_response,  # Response to a status update request.
+    # Response to a control command (on/off).
+    (0x00, 0x32): handle_control_response,
+    # A device responding to a discovery broadcast.
+    (0x00, 0x0F): handle_discovery_feedback,
+    # Response to a status update request.
+    (0x00, 0x34): handle_update_response,
 }
 
 
@@ -37,18 +35,12 @@ class PacketProtocol:
     delegating the actual protocol logic to its specialized components.
     """
 
-    def __init__(
-        self,
-        socket: Socket.socket,
-        UDP_IP,
-        UDP_PORT,
-        hass: HomeAssistant,
-    ):
+    def __init__(self, socket: Socket.socket, udp_ip, udp_port, tis_api: TISApi):
         """Initializes and wires together all protocol components."""
-        self.UDP_IP = UDP_IP
-        self.UDP_PORT = UDP_PORT
+        self.udp_ip = udp_ip
+        self.udp_port = udp_port
         self.socket = socket
-        self.hass = hass
+        self.tis_api = tis_api
 
         # --- Instantiate the core components of the protocol ---
 
@@ -57,15 +49,15 @@ class PacketProtocol:
 
         # The sender handles the logic for sending packets, including retries and debouncing.
         self.sender = PacketSender(
-            socket=self.socket,
+            sock=self.socket,
             coordinator=self.coordinator,
-            UDP_IP=self.UDP_IP,
-            UDP_PORT=self.UDP_PORT,
+            udp_ip=self.udp_ip,
+            udp_port=self.udp_port,
         )
 
         # The receiver handles the logic for listening and parsing incoming packets.
         # It's given the OPERATIONS_DICT to know how to dispatch them.
-        self.receiver = PacketReceiver(self.socket, OPERATIONS_DICT, self.hass)
+        self.receiver = PacketReceiver(self.socket, OPERATIONS_DICT, self.tis_api)
 
         # --- Delegate asyncio's protocol methods to the receiver ---
         # This is a clean design pattern. When asyncio calls `connection_made` or
