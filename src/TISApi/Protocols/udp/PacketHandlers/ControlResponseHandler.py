@@ -1,6 +1,7 @@
-from homeassistant.core import HomeAssistant
-import logging
 import asyncio
+import logging
+
+from TISApi.api import TISApi
 
 # Import the shared dictionary that holds acknowledgement events.
 from TISApi.shared import ack_events
@@ -8,7 +9,7 @@ from TISApi.shared import ack_events
 _LOGGER = logging.getLogger(__name__)
 
 
-async def handle_control_response(hass: HomeAssistant, info: dict):
+async def handle_control_response(tis_api: TISApi, info: dict):
     """
     Handles a 'control response' packet, which acts as an acknowledgement.
 
@@ -34,9 +35,9 @@ async def handle_control_response(hass: HomeAssistant, info: dict):
     }
     try:
         # Fire the event, using the device_id as the topic for efficient listening.
-        hass.bus.async_fire(str(info["device_id"]), event_data)
+        tis_api.event_queue.put_nowait(event_data)
     except Exception as e:
-        _LOGGER.error(f"Error firing control_response event: {e}")
+        _LOGGER.error("Error firing control_response event: %s", str(e))
 
     # --- 2. Signal the sender that the command was acknowledged ---
     try:
@@ -57,4 +58,4 @@ async def handle_control_response(hass: HomeAssistant, info: dict):
             # confirming the command was successful.
             event.set()
     except Exception as e:
-        _LOGGER.error(f"Error setting the acknowledgement event: {e}")
+        _LOGGER.error("Error setting the acknowledgement event: %s", str(e))

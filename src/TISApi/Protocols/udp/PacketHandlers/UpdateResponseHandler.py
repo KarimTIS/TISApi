@@ -1,10 +1,12 @@
-from homeassistant.core import HomeAssistant
+import asyncio
 import logging
+
+from TISApi.api import TISApi
 
 _LOGGER = logging.getLogger(__name__)
 
 
-async def handle_update_response(hass: HomeAssistant, info: dict):
+async def handle_update_response(tis_api: TISApi, info: dict):
     """
     Handles a parsed 'update response' packet from a TIS device.
 
@@ -31,7 +33,7 @@ async def handle_update_response(hass: HomeAssistant, info: dict):
         # --- Fire the event on the Home Assistant event bus ---
         # The event's "type" or "topic" is the device_id itself. This allows
         # entities to efficiently subscribe only to events from their parent device.
-        hass.bus.async_fire(str(info["device_id"]), event_data)
+        tis_api.event_queue.put_nowait(event_data)
     except Exception as e:
         # Log any errors that occur during the event firing process.
-        _LOGGER.error(f"Error firing update_response event: {e}")
+        _LOGGER.error("Error firing update_response event: %s", str(e))
