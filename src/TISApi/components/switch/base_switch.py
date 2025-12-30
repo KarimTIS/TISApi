@@ -3,11 +3,11 @@ from collections.abc import Callable
 from typing import Any
 
 # Import custom modules from this integration.
-from ...api import TISApi  # The main API for communicating with TIS devices.
-from ...Protocols.udp.ProtocolHandler import (
-    TISProtocolHandler,
+from TISApi.api import TISApi
+from TISApi.Protocols.udp.ProtocolHandler import (
     TISPacket,
-)  # TIS protocol specifics.
+    TISProtocolHandler,
+)
 
 
 class TISAPISwitch:
