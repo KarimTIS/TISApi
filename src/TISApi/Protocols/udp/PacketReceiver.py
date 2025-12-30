@@ -1,12 +1,16 @@
 # Import helper functions, networking components, and Home Assistant core.
-from TISApi.BytesHelper import *
-from socket import socket
-from TISApi.Protocols.udp.PacketExtractor import PacketExtractor
-from TISApi.Protocols.udp.PacketDispatcher import PacketDispatcher
+import asyncio
 import logging
-from homeassistant.core import HomeAssistant
+from socket import socket
+
+from TISApi.api import TISApi
+
+from TISApi.BytesHelper import bytes2hex
+from TISApi.Protocols.udp.PacketDispatcher import PacketDispatcher
+from TISApi.Protocols.udp.PacketExtractor import PacketExtractor
 
 _LOGGER = logging.getLogger(__name__)
+
 
 class PacketReceiver:
     """
@@ -19,17 +23,17 @@ class PacketReceiver:
 
     def __init__(
         self,
-        socket: socket,
-        OPERATIONS_DICT: dict,
-        hass: HomeAssistant,
+        sock: socket,
+        operations_dict: dict,
+        tis_api: TISApi,
     ):
         """Initialize the PacketReceiver."""
-        self.socket = socket
-        self._hass = hass  # The Home Assistant instance.
+        self.socket = sock
+        self.tis_api = tis_api
 
         # The dispatcher is responsible for acting on the parsed packet information
         # (e.g., firing events, setting ack signals).
-        self.dispatcher = PacketDispatcher(self._hass, OPERATIONS_DICT)
+        self.dispatcher = PacketDispatcher(self.tis_api, operations_dict)
 
         # This will hold the asyncio transport object once the connection is made.
         self.transport = None
@@ -41,7 +45,7 @@ class PacketReceiver:
         self.transport = transport
         _LOGGER.info("UDP connection made and listener is active.")
 
-    def datagram_received(self, data, addr):
+    def datagram_received(self, data, _):
         """
         Callback executed by asyncio every time a UDP datagram is received.
 
@@ -59,9 +63,11 @@ class PacketReceiver:
             # It is crucial to schedule the dispatcher as a new task in the Home Assistant
             # event loop. This prevents the datagram_received method from blocking,
             # ensuring the receiver is always ready for the next incoming packet.
-            self._hass.async_create_task(self.dispatcher.dispatch_packet(info))
+            # TODO: create a task using asyncio instead of hass!
+            asyncio.create_task(self.dispatcher.dispatch_packet(info))
+            # self._hass.async_create_task(self.dispatcher.dispatch_packet(info))
 
         except Exception as e:
             # Catch any errors during parsing to prevent a single malformed packet
             # from crashing the entire listener.
-            _LOGGER.error(f"Error processing received datagram: {e}")
+            _LOGGER.error("Error processing received datagram: %s", e)
