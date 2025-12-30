@@ -3,8 +3,7 @@ import asyncio
 import logging
 import socket
 
-# Import specific components from Home Assistant core.
-from homeassistant.core import HomeAssistant
+from TISApi.DiscoveryHelpers import DEVICE_APPLIANCES
 
 # Import TIS API protocol setup and handlers.
 from TISApi.Protocols import setup_udp_protocol
@@ -12,8 +11,6 @@ from TISApi.Protocols.udp.ProtocolHandler import (
     TISPacket,
     TISProtocolHandler,
 )
-from TISApi.DiscoveryHelpers import DEVICE_APPLIANCES
-from TISApi.shared import shared_data
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -24,7 +21,6 @@ class TISApi:
     def __init__(
         self,
         port: int,
-        hass: HomeAssistant,
         domain: str,
         devices_dict: dict,
         host: str = "0.0.0.0",  # Default to listen on all available network interfaces.
@@ -33,13 +29,19 @@ class TISApi:
         # Network configuration.
         self.host = host
         self.port = port
+        self.event_queue = asyncio.Queue()
+        self.data = {
+            "discovered_devices": [],
+            "devices": [],
+        }
+
+        # Create a UDP socket.
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
         # Will hold the asyncio transport and protocol instances after connection.
         self.protocol = None
         self.transport = None
 
-        # Home Assistant specific objects.
-        self.hass = hass  # The Home Assistant instance.
         self.domain = domain  # The integration's domain (e.g., 'tis_control').
 
         # Dictionaries to hold device information.
@@ -53,28 +55,18 @@ class TISApi:
 
     async def connect(self):
         """Establish the UDP connection and start listening for devices."""
-        # Use the Home Assistant event loop for asyncio operations.
-        self.loop = self.hass.loop
-
-        # Create a UDP socket.
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
         try:
             # Set up the asyncio UDP protocol endpoint. This starts listening for incoming packets.
             self.transport, self.protocol = await setup_udp_protocol(
-                self.sock,
-                self.loop,
-                self.host,
-                self.port,
-                self.hass,
+                sock=self.sock,
+                udp_ip=self.host,
+                udp_port=self.port,
+                tis_api=self,
             )
         except Exception as e:
             # Log and raise an error if the connection fails.
             _LOGGER.error("Error connecting to TIS API %s", e)
-            raise ConnectionError
-
-        # Once connected, immediately scan for devices on the network.
-        await self.scan_devices()
+            raise ConnectionError from e
 
     async def scan_devices(self, broadcast_attempts=10):
         """Scan the network for TIS devices by broadcasting a discovery packet."""
@@ -86,8 +78,8 @@ class TISApi:
             await asyncio.sleep(1)
 
         # Process the raw data from devices that responded to the discovery broadcast.
-        for device in shared_data["discovered_devices"]:
-            shared_data["devices"].append(
+        for device in self.data["discovered_devices"]:
+            self.data["devices"].append(
                 {
                     "device_id": device["device_id"],
                     "device_type_code": device["device_type"],
@@ -103,12 +95,14 @@ class TISApi:
     async def get_entities(self, platform: str):
         """Get a list of appliances (entities) for a specific Home Assistant platform (e.g., 'light', 'switch')."""
         # Load the list of devices discovered during the scan.
-        devices = shared_data["devices"]
+        devices = self.data["devices"]
 
         # Parse the device list to generate a structured dictionary of appliances.
         appliances = self.parse_saved_devices(devices)
         _LOGGER.warning(
-            f"appliances for platform {platform}: {appliances.get(platform, [])}"
+            "appliances for platform %s: %s",
+            str(platform),
+            str(appliances.get(platform, [])),
         )
 
         # Return only the appliances that match the requested platform.
