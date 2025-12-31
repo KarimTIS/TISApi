@@ -1,12 +1,16 @@
 import socket
 from asyncio import get_event_loop
+from typing import Callable
 
 # Import the main protocol class that orchestrates the sender, receiver, etc.
 from TISApi.Protocols.udp.PacketProtocol import PacketProtocol
 
 
 async def setup_udp_protocol(
-    sock: socket, udp_ip: str, udp_port: int, tis_api
+    sock: socket,
+    udp_ip: str,
+    udp_port: int,
+    fire_event_callback: Callable,
 ) -> tuple[socket.socket, PacketProtocol]:
     """
     Initializes and configures an asyncio UDP datagram endpoint.
@@ -18,7 +22,7 @@ async def setup_udp_protocol(
     :param loop: The asyncio event loop.
     :param udp_ip: The target IP address for sending.
     :param udp_port: The port to listen on and send to.
-    :param tis_api: The TISApi instances.
+    :param fire_event_callback: A callback function to fire event.
     :return: A tuple containing the asyncio transport and the protocol instance.
     """
     # Get the current running event loop or make one.
@@ -28,7 +32,9 @@ async def setup_udp_protocol(
     transport, protocol = await loop.create_datagram_endpoint(
         # protocol_factory: A function that returns a new protocol instance.
         # We use a lambda to create an instance of our main PacketProtocol class.
-        protocol_factory=lambda: PacketProtocol(sock, udp_ip, udp_port, tis_api),
+        protocol_factory=lambda: PacketProtocol(
+            sock, udp_ip, udp_port, fire_event_callback
+        ),
         # remote_addr: Default destination for sending packets (can be overridden).
         remote_addr=(udp_ip, udp_port),
         # local_addr: The address and port to listen on.

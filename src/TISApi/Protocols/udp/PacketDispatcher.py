@@ -1,4 +1,5 @@
 import logging
+from typing import Callable
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -12,14 +13,14 @@ class PacketDispatcher:
     packet's operation code.
     """
 
-    def __init__(self, tis_api, operations_dict: dict):
+    def __init__(self, fire_event_callback: Callable, operations_dict: dict):
         """
         Initialize the PacketDispatcher.
 
-        :param tis_api: The TISApi instance, passed to handler functions.
+        :param fire_event_callback: The fire event callback funciton, passed to handler functions.
         :param operations_dict: A dictionary mapping operation codes to handler functions.
         """
-        self.tis_api = tis_api
+        self.fire_event_callback = fire_event_callback
         self.operations_dict = operations_dict
 
     async def dispatch_packet(self, info: dict):
@@ -38,7 +39,7 @@ class PacketDispatcher:
             # If a handler function was found, execute it.
             if packet_handler != "unknown operation":
                 # The handler itself is an async function, so it must be awaited.
-                await packet_handler(self.tis_api, info)
+                await packet_handler(self.fire_event_callback, info)
             else:
                 # If the operation code is not in our dictionary, log it as an error.
                 _LOGGER.error(

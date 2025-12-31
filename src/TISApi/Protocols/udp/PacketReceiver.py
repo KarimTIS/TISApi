@@ -2,6 +2,7 @@
 import asyncio
 import logging
 from socket import socket
+from typing import Callable
 
 from TISApi.BytesHelper import bytes2hex
 from TISApi.Protocols.udp.PacketDispatcher import PacketDispatcher
@@ -23,15 +24,14 @@ class PacketReceiver:
         self,
         sock: socket,
         operations_dict: dict,
-        tis_api,
+        fire_event_callback: Callable,
     ):
         """Initialize the PacketReceiver."""
         self.socket = sock
-        self.tis_api = tis_api
 
         # The dispatcher is responsible for acting on the parsed packet information
         # (e.g., firing events, setting ack signals).
-        self.dispatcher = PacketDispatcher(self.tis_api, operations_dict)
+        self.dispatcher = PacketDispatcher(fire_event_callback, operations_dict)
 
         # This will hold the asyncio transport object once the connection is made.
         self.transport = None
