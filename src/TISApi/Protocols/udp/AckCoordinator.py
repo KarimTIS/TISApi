@@ -11,11 +11,11 @@ _LOGGER = logging.getLogger(__name__)
 
 class AckCoordinator:
     """
-        Manages the lifecycle of asyncio.Event objects for acknowledgement (ack) handling.
+    Manages the lifecycle of asyncio.Event objects for acknowledgement (ack) handling.
 
-        This class acts as a bridge between the PacketSender and the PacketReceiver.
-        When the sender sends a command, it creates an 'ack event' here. When the
-        receiver gets the corresponding acknowledgement, it uses this coordinator
+    This class acts as a bridge between the PacketSender and the PacketReceiver.
+    When the sender sends a command, it creates an 'ack event' here. When the
+    receiver gets the corresponding acknowledgement, it uses this coordinator
     to find and set that event, unblocking the sender.
     """
 
