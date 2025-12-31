@@ -9,6 +9,7 @@ from TISApi.DiscoveryHelpers import DEVICE_APPLIANCES
 # Import TIS API protocol setup and handlers.
 from TISApi.Protocols import setup_udp_protocol
 from TISApi.Protocols.udp.ProtocolHandler import TISPacket, TISProtocolHandler
+from TISApi.shared import shared_data
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -29,10 +30,6 @@ class TISApi:
         self.host = host
         self.port = port
         self.event_queue = asyncio.Queue()
-        self.data = {
-            "discovered_devices": [],
-            "devices": [],
-        }
 
         if fire_event_callback is None:
             self.fire_event_callback = self.event_callback
@@ -96,8 +93,8 @@ class TISApi:
             await asyncio.sleep(1)
 
         # Process the raw data from devices that responded to the discovery broadcast.
-        for device in self.data["discovered_devices"]:
-            self.data["devices"].append(
+        for device in shared_data["discovered_devices"]:
+            shared_data["devices"].append(
                 {
                     "device_id": device["device_id"],
                     "device_type_code": device["device_type"],
@@ -113,7 +110,7 @@ class TISApi:
     async def get_entities(self, platform: str):
         """Get a list of appliances (entities) for a specific Home Assistant platform (e.g., 'light', 'switch')."""
         # Load the list of devices discovered during the scan.
-        devices = self.data["devices"]
+        devices = shared_data["devices"]
 
         # Parse the device list to generate a structured dictionary of appliances.
         appliances = self.parse_saved_devices(devices)
