@@ -1,7 +1,6 @@
 import asyncio
 import logging
-
-from TISApi.api import TISApi
+from typing import Callable
 
 # Import the shared dictionary that holds acknowledgement events.
 from TISApi.shared import ack_events
@@ -9,13 +8,12 @@ from TISApi.shared import ack_events
 _LOGGER = logging.getLogger(__name__)
 
 
-async def handle_control_response(tis_api: TISApi, info: dict):
+async def handle_control_response(fire_event_callback: Callable, info: dict):
     """
     Handles a 'control response' packet, which acts as an acknowledgement.
 
     This function has two primary responsibilities:
-    1. Fire an event on the Home Assistant event bus to let the corresponding
-       entity know its state has changed.
+    1. Fire an event to let the corresponding entity know its state has changed.
     2. Signal the PacketSender that the command was successfully received
        by setting an asyncio.Event.
 
@@ -35,7 +33,7 @@ async def handle_control_response(tis_api: TISApi, info: dict):
     }
     try:
         # Fire the event, using the device_id as the topic for efficient listening.
-        tis_api.event_queue.put_nowait(event_data)
+        fire_event_callback(event_data)
     except Exception as e:
         _LOGGER.error("Error firing control_response event: %s", str(e))
 

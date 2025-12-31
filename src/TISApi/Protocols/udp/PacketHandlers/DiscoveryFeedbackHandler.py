@@ -1,7 +1,7 @@
-from TISApi.api import TISApi
+from TISApi.shared import shared_data
 
 
-async def handle_discovery_feedback(tis_api: TISApi, info: dict):
+async def handle_discovery_feedback(_, info: dict):
     """
     Handles a 'discovery feedback' packet from a TIS device.
 
@@ -15,7 +15,7 @@ async def handle_discovery_feedback(tis_api: TISApi, info: dict):
     # This prevents adding duplicate entries if a device responds multiple times.
     if not any(
         device["device_id"] == info["device_id"]
-        for device in tis_api.data["discovered_devices"]
+        for device in shared_data["discovered_devices"]
     ):
         # If the device is new, append its information to the shared list.
-        tis_api.data["discovered_devices"].append(info)
+        shared_data["discovered_devices"].append(info)
