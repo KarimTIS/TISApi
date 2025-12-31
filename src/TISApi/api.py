@@ -2,15 +2,13 @@
 import asyncio
 import logging
 import socket
+from typing import Callable, Optional
 
 from TISApi.DiscoveryHelpers import DEVICE_APPLIANCES
 
 # Import TIS API protocol setup and handlers.
 from TISApi.Protocols import setup_udp_protocol
-from TISApi.Protocols.udp.ProtocolHandler import (
-    TISPacket,
-    TISProtocolHandler,
-)
+from TISApi.Protocols.udp.ProtocolHandler import TISPacket, TISProtocolHandler
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -23,6 +21,7 @@ class TISApi:
         port: int,
         domain: str,
         devices_dict: dict,
+        fire_event_callback: Optional[Callable] = None,
         host: str = "0.0.0.0",  # Default to listen on all available network interfaces.
     ):
         """Initialize the TIS API handler."""
@@ -34,6 +33,11 @@ class TISApi:
             "discovered_devices": [],
             "devices": [],
         }
+
+        if fire_event_callback is None:
+            self.fire_event_callback = self.event_callback
+        else:
+            self.fire_event_callback = fire_event_callback
 
         # Create a UDP socket.
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -53,6 +57,10 @@ class TISApi:
             TISProtocolHandler.generate_discovery_packet()
         )
 
+    def event_callback(self, event_data: dict):
+        """Fire an Event with event_data"""
+        self.event_queue.put_nowait(event_data)
+
     async def consume_events(self):
         """A generator that yields events as they arrive."""
         while True:
@@ -71,7 +79,7 @@ class TISApi:
                 sock=self.sock,
                 udp_ip=self.host,
                 udp_port=self.port,
-                tis_api=self,
+                fire_event_callback=self.fire_event_callback,
             )
         except Exception as e:
             # Log and raise an error if the connection fails.
