@@ -1,7 +1,5 @@
 import logging
 
-from TISApi.api import TISApi
-
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -14,7 +12,7 @@ class PacketDispatcher:
     packet's operation code.
     """
 
-    def __init__(self, tis_api: TISApi, operations_dict: dict):
+    def __init__(self, tis_api, operations_dict: dict):
         """
         Initialize the PacketDispatcher.
 

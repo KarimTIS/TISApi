@@ -1,7 +1,5 @@
 import socket as Socket
 
-from TISApi.api import TISApi
-
 # Import all the necessary components for the TIS protocol.
 from TISApi.Protocols.udp.AckCoordinator import AckCoordinator
 from TISApi.Protocols.udp.PacketReceiver import PacketReceiver
@@ -35,7 +33,7 @@ class PacketProtocol:
     delegating the actual protocol logic to its specialized components.
     """
 
-    def __init__(self, socket: Socket.socket, udp_ip, udp_port, tis_api: TISApi):
+    def __init__(self, socket: Socket.socket, udp_ip, udp_port, tis_api):
         """Initializes and wires together all protocol components."""
         self.udp_ip = udp_ip
         self.udp_port = udp_port

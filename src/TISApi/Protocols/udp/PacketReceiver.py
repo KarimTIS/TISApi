@@ -3,8 +3,6 @@ import asyncio
 import logging
 from socket import socket
 
-from TISApi.api import TISApi
-
 from TISApi.BytesHelper import bytes2hex
 from TISApi.Protocols.udp.PacketDispatcher import PacketDispatcher
 from TISApi.Protocols.udp.PacketExtractor import PacketExtractor
@@ -25,7 +23,7 @@ class PacketReceiver:
         self,
         sock: socket,
         operations_dict: dict,
-        tis_api: TISApi,
+        tis_api,
     ):
         """Initialize the PacketReceiver."""
         self.socket = sock
