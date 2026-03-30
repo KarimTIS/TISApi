@@ -78,6 +78,13 @@ class TISApi:
             _LOGGER.error("Error connecting to TIS API %s", e)
             raise ConnectionError from e
 
+    def disconnect(self):
+        """Close the UDP connection and stop listening for devices."""
+        if self.transport:
+            self.transport.close()
+            self.transport = None
+            self.protocol = None
+
     async def scan_devices(self, broadcast_attempts=10):
         """Scan the network for TIS devices by broadcasting a discovery packet."""
 
