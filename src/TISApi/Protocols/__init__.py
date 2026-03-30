@@ -7,7 +7,6 @@ from TISApi.Protocols.udp.PacketProtocol import PacketProtocol
 
 
 async def setup_udp_protocol(
-    sock: socket,
     udp_ip: str,
     udp_port: int,
     fire_event_callback: Callable,
@@ -33,7 +32,7 @@ async def setup_udp_protocol(
         # protocol_factory: A function that returns a new protocol instance.
         # We use a lambda to create an instance of our main PacketProtocol class.
         protocol_factory=lambda: PacketProtocol(
-            sock, udp_ip, udp_port, fire_event_callback
+            udp_ip, udp_port, fire_event_callback
         ),
         # remote_addr: Default destination for sending packets (can be overridden).
         remote_addr=(udp_ip, udp_port),

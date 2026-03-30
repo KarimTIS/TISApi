@@ -1,4 +1,3 @@
-import socket as Socket
 from typing import Callable
 
 # Import all the necessary components for the TIS protocol.
@@ -36,7 +35,6 @@ class PacketProtocol:
 
     def __init__(
         self,
-        socket: Socket.socket,
         udp_ip,
         udp_port,
         fire_event_callback: Callable,
@@ -44,7 +42,6 @@ class PacketProtocol:
         """Initializes and wires together all protocol components."""
         self.udp_ip = udp_ip
         self.udp_port = udp_port
-        self.socket = socket
 
         # --- Instantiate the core components of the protocol ---
 
@@ -53,7 +50,6 @@ class PacketProtocol:
 
         # The sender handles the logic for sending packets, including retries and debouncing.
         self.sender = PacketSender(
-            sock=self.socket,
             coordinator=self.coordinator,
             udp_ip=self.udp_ip,
             udp_port=self.udp_port,
@@ -62,12 +58,16 @@ class PacketProtocol:
         # The receiver handles the logic for listening and parsing incoming packets.
         # It's given the OPERATIONS_DICT to know how to dispatch them.
         self.receiver = PacketReceiver(
-            self.socket, OPERATIONS_DICT, fire_event_callback
+            OPERATIONS_DICT, fire_event_callback
         )
 
         # --- Delegate asyncio's protocol methods to the receiver ---
-        # This is a clean design pattern. When asyncio calls `connection_made` or
-        # `datagram_received` on this PacketProtocol instance, the calls are
-        # forwarded directly to the PacketReceiver, which contains the actual implementation.
-        self.connection_made = self.receiver.connection_made
+        # This is a clean design pattern. When asyncio calls `datagram_received`
+        # on this PacketProtocol instance, the calls are forwarded directly to the
+        # PacketReceiver.
         self.datagram_received = self.receiver.datagram_received
+
+    def connection_made(self, transport):
+        """Callback executed by asyncio when the datagram endpoint is set up."""
+        self.receiver.connection_made(transport)
+        self.sender.transport = transport

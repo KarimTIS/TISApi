@@ -1,7 +1,6 @@
 # Import helper functions, networking components, and Home Assistant core.
 import asyncio
 import logging
-from socket import socket
 from typing import Callable
 
 from TISApi.BytesHelper import bytes2hex
@@ -22,13 +21,10 @@ class PacketReceiver:
 
     def __init__(
         self,
-        sock: socket,
         operations_dict: dict,
         fire_event_callback: Callable,
     ):
         """Initialize the PacketReceiver."""
-        self.socket = sock
-
         # The dispatcher is responsible for acting on the parsed packet information
         # (e.g., firing events, setting ack signals).
         self.dispatcher = PacketDispatcher(fire_event_callback, operations_dict)

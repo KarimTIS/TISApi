@@ -1,7 +1,6 @@
 # Import necessary libraries and modules.
 import asyncio
 import logging
-import socket
 from typing import Callable, Optional
 
 from TISApi.DiscoveryHelpers import DEVICE_APPLIANCES
@@ -35,9 +34,6 @@ class TISApi:
             self.fire_event_callback = self.event_callback
         else:
             self.fire_event_callback = fire_event_callback
-
-        # Create a UDP socket.
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
         # Will hold the asyncio transport and protocol instances after connection.
         self.protocol = None
@@ -73,7 +69,6 @@ class TISApi:
         try:
             # Set up the asyncio UDP protocol endpoint. This starts listening for incoming packets.
             self.transport, self.protocol = await setup_udp_protocol(
-                sock=self.sock,
                 udp_ip=self.host,
                 udp_port=self.port,
                 fire_event_callback=self.fire_event_callback,
