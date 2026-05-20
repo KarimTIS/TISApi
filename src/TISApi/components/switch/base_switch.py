@@ -66,9 +66,19 @@ class TISAPISwitch:
         """Return the unique ID for this switch."""
         return f"tis_{'_'.join(map(str, self.device_id))}_ch{self.channel_number}"
 
-    def register_callback(self, callback: Callable[[], None]) -> None:
-        """Register a callback function to call when the state changes."""
+    def register_callback(self, callback: Callable[[], None]) -> Callable[[], None]:
+        """Register a callback function to call when the state changes.
+
+        Returns a callable that can be used to unregister the callback.
+        """
         self._update_callback = callback
+
+        def unsubscribe() -> None:
+            """Remove the callback if it is still the current one."""
+            if self._update_callback == callback:
+                self._update_callback = None
+
+        return unsubscribe
 
     def process_update(self, event_data: dict[str, Any]) -> None:
         """Process an incoming event from the TIS gateway and update state."""
