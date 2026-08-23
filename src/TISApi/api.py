@@ -1,7 +1,7 @@
 # Import necessary libraries and modules.
 import asyncio
 import logging
-from typing import Callable, Optional
+from collections.abc import Callable
 
 from TISApi.DiscoveryHelpers import DEVICE_APPLIANCES
 
@@ -21,7 +21,7 @@ class TISApi:
         port: int,
         domain: str,
         devices_dict: dict,
-        fire_event_callback: Optional[Callable] = None,
+        fire_event_callback: Callable | None = None,
         host: str = "0.0.0.0",  # Default to listen on all available network interfaces.
     ):
         """Initialize the TIS API handler."""
@@ -148,7 +148,7 @@ class TISApi:
                     # Create an entity for each channel the device has for this platform.
                     for i in range(1, count + 1):
                         appliance = {
-                            "name": f"{str(device['device_id'])} {platform} channel{i}",
+                            "name": f"{device['device_id']!s} {platform} channel{i}",
                             "device_id": device["device_id"],
                             "device_type_name": device["device_type_name"],
                             "gateway": device["gateway"],
