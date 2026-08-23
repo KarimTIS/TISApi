@@ -1,7 +1,7 @@
 from TISApi.shared import shared_data
 
 
-async def handle_discovery_feedback(_, info: dict):
+async def handle_discovery_feedback(_, info: dict, discovered_devices: list | None = None):
     """
     Handles a 'discovery feedback' packet from a TIS device.
 
@@ -10,12 +10,20 @@ async def handle_discovery_feedback(_, info: dict):
     scan and, if not, adds it to a shared list in Home Assistant's data store.
 
     :param info: A dictionary containing the parsed packet data from the discovered device.
+    :param discovered_devices: An optional list to store the discovered devices.
     """
-    # Check if a device with the same device_id already exists in our list of discovered devices.
-    # This prevents adding duplicate entries if a device responds multiple times.
-    if not any(
-        device["device_id"] == info["device_id"]
-        for device in shared_data["discovered_devices"]
-    ):
-        # If the device is new, append its information to the shared list.
-        shared_data["discovered_devices"].append(info)
+    if discovered_devices is not None:
+        if not any(
+            device["device_id"] == info["device_id"]
+            for device in discovered_devices
+        ):
+            discovered_devices.append(info)
+    else:
+        # Check if a device with the same device_id already exists in our list of discovered devices.
+        # This prevents adding duplicate entries if a device responds multiple times.
+        if not any(
+            device["device_id"] == info["device_id"]
+            for device in shared_data["discovered_devices"]
+        ):
+            # If the device is new, append its information to the shared list.
+            shared_data["discovered_devices"].append(info)

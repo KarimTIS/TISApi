@@ -1,4 +1,4 @@
-from typing import Callable
+from collections.abc import Callable
 
 # Import all the necessary components for the TIS protocol.
 from TISApi.Protocols.udp.AckCoordinator import AckCoordinator
@@ -38,6 +38,7 @@ class PacketProtocol:
         udp_ip,
         udp_port,
         fire_event_callback: Callable,
+        discovered_devices: list | None = None,
     ):
         """Initializes and wires together all protocol components."""
         self.udp_ip = udp_ip
@@ -58,7 +59,7 @@ class PacketProtocol:
         # The receiver handles the logic for listening and parsing incoming packets.
         # It's given the OPERATIONS_DICT to know how to dispatch them.
         self.receiver = PacketReceiver(
-            OPERATIONS_DICT, fire_event_callback
+            OPERATIONS_DICT, fire_event_callback, discovered_devices
         )
 
         # --- Delegate asyncio's protocol methods to the receiver ---

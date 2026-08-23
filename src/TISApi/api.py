@@ -8,7 +8,6 @@ from TISApi.DiscoveryHelpers import DEVICE_APPLIANCES
 # Import TIS API protocol setup and handlers.
 from TISApi.Protocols import setup_udp_protocol
 from TISApi.Protocols.udp.ProtocolHandler import TISPacket, TISProtocolHandler
-from TISApi.shared import shared_data
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -44,6 +43,8 @@ class TISApi:
         # Dictionaries to hold device information.
         self.config_entries = {}
         self.devices_dict = devices_dict  # Maps device type codes to names.
+        self.discovered_devices = []
+        self.devices = []
 
         # Pre-generate the discovery packet to be broadcasted for finding devices.
         self.discovery_packet: TISPacket = (
@@ -72,6 +73,7 @@ class TISApi:
                 udp_ip=self.host,
                 udp_port=self.port,
                 fire_event_callback=self.fire_event_callback,
+                discovered_devices=self.discovered_devices,
             )
         except Exception as e:
             # Log and raise an error if the connection fails.
@@ -87,6 +89,10 @@ class TISApi:
 
     async def scan_devices(self, broadcast_attempts=10):
         """Scan the network for TIS devices by broadcasting a discovery packet."""
+        
+        # Clear the discovered devices before starting the scan logic.
+        self.discovered_devices.clear()
+        self.devices.clear()
 
         # Broadcast the discovery packet multiple times for reliability, as UDP is connectionless.
         for _ in range(broadcast_attempts):
@@ -95,8 +101,8 @@ class TISApi:
             await asyncio.sleep(1)
 
         # Process the raw data from devices that responded to the discovery broadcast.
-        for device in shared_data["discovered_devices"]:
-            shared_data["devices"].append(
+        for device in self.discovered_devices:
+            self.devices.append(
                 {
                     "device_id": device["device_id"],
                     "device_type_code": device["device_type"],
@@ -112,7 +118,7 @@ class TISApi:
     async def get_entities(self, platform: str):
         """Get a list of appliances (entities) for a specific Home Assistant platform (e.g., 'light', 'switch')."""
         # Load the list of devices discovered during the scan.
-        devices = shared_data["devices"]
+        devices = self.devices
 
         # Parse the device list to generate a structured dictionary of appliances.
         appliances = self.parse_saved_devices(devices)

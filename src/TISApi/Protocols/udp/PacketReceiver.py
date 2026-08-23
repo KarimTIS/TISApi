@@ -1,7 +1,7 @@
 # Import helper functions, networking components, and Home Assistant core.
 import asyncio
 import logging
-from typing import Callable
+from collections.abc import Callable
 
 from TISApi.BytesHelper import bytes2hex
 from TISApi.Protocols.udp.PacketDispatcher import PacketDispatcher
@@ -23,11 +23,21 @@ class PacketReceiver:
         self,
         operations_dict: dict,
         fire_event_callback: Callable,
+        discovered_devices: list | None = None,
     ):
         """Initialize the PacketReceiver."""
+        ops = dict(operations_dict)
+        if discovered_devices is not None and (0x00, 0x0F) in ops:
+            orig = ops[(0x00, 0x0F)]
+
+            async def wrapped_handler(cb, info):
+                await orig(cb, info, discovered_devices)
+
+            ops[(0x00, 0x0F)] = wrapped_handler
+
         # The dispatcher is responsible for acting on the parsed packet information
         # (e.g., firing events, setting ack signals).
-        self.dispatcher = PacketDispatcher(fire_event_callback, operations_dict)
+        self.dispatcher = PacketDispatcher(fire_event_callback, ops)
 
         # This will hold the asyncio transport object once the connection is made.
         self.transport = None
